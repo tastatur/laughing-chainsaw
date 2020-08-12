@@ -16,6 +16,7 @@
 **/
 
 #define HALL_PIN 2
+#define BUTTON_PIN 3
 
 byte hallEventsCounts = 0;
 int rpm = 0;
@@ -25,6 +26,9 @@ DHT dht(DHTPIN, DHTTYPE);
 float temperature = 0;
 float humidity = 0;
 
+enum displayStates {RPM, ENV};
+byte displayState = RPM;
+
 //Display
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 32
@@ -33,6 +37,12 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET_PIN);
 
 void hallTriggered() {
   hallEventsCounts++;
+}
+
+void buttonPressed() {
+  if (++displayState > ENV) {
+    displayState = RPM;
+  }
 }
 
 void setup() {
@@ -45,12 +55,18 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(HALL_PIN), hallTriggered, FALLING);
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonPressed, FALLING);
 }
 
 void loop() {
   updateRpm(&rpm, &rpmTime, &hallEventsCounts);
   updateTemp(&temperature, &humidity, dht);
   
-  //displayRpms(&rpm, display);
-  displayEnvData(&temperature, &humidity, display);
+  if (displayState == RPM) {
+    displayRpms(&rpm, display);
+  } else if (displayState == ENV) {
+    displayEnvData(&temperature, &humidity, display);
+  }   
 }
