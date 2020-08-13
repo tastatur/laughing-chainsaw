@@ -18,7 +18,7 @@
 #define HALL_PIN 2
 #define BUTTON_PIN 3
 
-byte hallEventsCounts = 0;
+volatile byte hallEventsCounts = 0;
 int rpm = 0;
 unsigned long rpmTime;
 
@@ -26,8 +26,7 @@ DHT dht(DHTPIN, DHTTYPE);
 float temperature = 0;
 float humidity = 0;
 
-enum displayStates {RPM, ENV};
-byte displayState = RPM;
+volatile byte displayState = 0;
 
 //Display
 #define SCREEN_WIDTH 128
@@ -40,8 +39,8 @@ void hallTriggered() {
 }
 
 void buttonPressed() {
-  if (++displayState > ENV) {
-    displayState = RPM;
+  if (++displayState > 2) {
+    displayState = 0;
   }
 }
 
@@ -64,9 +63,13 @@ void loop() {
   updateRpm(&rpm, &rpmTime, &hallEventsCounts);
   updateTemp(&temperature, &humidity, dht);
   
-  if (displayState == RPM) {
+  if (displayState == 0) {
     displayRpms(&rpm, display);
-  } else if (displayState == ENV) {
+  } else if (displayState == 1) {
     displayEnvData(&temperature, &humidity, display);
-  }   
+  } else if (displayState == 2) {
+    String speedStr(getSpeedInMS(&rpm));
+    speedStr += " m/s";
+    displayString(speedStr, display);
+  }
 }

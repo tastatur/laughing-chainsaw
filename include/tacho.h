@@ -5,4 +5,8 @@
 #define HALL_EVENTS_MAX 100
 #define HALL_EVENTS_DELTA_MS 2000
 
-void updateRpm(int* rpm, unsigned long* rpmTime, byte* hallEventsCounts);
+//Radius of the wheel in cm (up to the magnet mount point)
+#define WHEEL_MAGNET_RADIUS 40.0
+
+void updateRpm(int* rpm, unsigned long* rpmTime, volatile byte* hallEventsCounts);
+byte getSpeedInMS(int* rpm);
