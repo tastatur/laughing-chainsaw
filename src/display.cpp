@@ -21,6 +21,7 @@ void displayRpms(int* rpms, Adafruit_SSD1306& display) {
 
 void displayEnvData(float* temperature, float* humidity, Adafruit_SSD1306& display) {
     String envString(*temperature);
-    envString += " C";
+    envString += " C\n";
+    envString += String(*humidity) + " %";
     displayString(envString, display);
 }
